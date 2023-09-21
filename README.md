@@ -9,7 +9,7 @@
 
 :star2: 
 
-![alt text](https://github.com/runze1223/VH-NBEATS/main/pic/VH-NBEATS.png)
+![alt text](https://github.com/runze1223/VH-NBEATS/blob/main/pic/VH-NBEATS.png)
 
 ## Results
 
