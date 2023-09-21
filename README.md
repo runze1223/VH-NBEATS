@@ -13,21 +13,21 @@
 
 ## Results
 
-### Supervised Learning
 
 ![alt text](https://github.com/yuqinie98/PatchTST/blob/main/pic/table3.png)
+
 
 ### Implement the project
 
 1. Install requirements. ```pip install -r requirements.txt```
 
-2. Download data. You can download all the datasets from . Create a seperate folder ```./dataset``` and put all the csv files in the directory.
+2. Download data. You can download the ETTH1, ETTH2, Electricity and Traffic data from [Autoformer](https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy) and WTH data from [Google Drive](https://drive.google.com/drive/folders/1ohGYWWohJlOlb2gsGTeEq3Wii2egnEPR?usp=sharing) Create a seperate folder ```./dataset``` and put all the csv files in the directory.
 
 3. Training. All the scripts are in the directory ```./scripts/vae```
 ```
 sh ./scripts/vae/ETTH1.sh
 ```
-You can adjust the hyperparameters based on your needs (e.g. different look-back windows and prediction lengths, beta,   ). We also provide codes for some baseline models inside the project.
+You can adjust the hyperparameters based on your needs (e.g. different look-back windows and prediction lengths, beta and so on). We also provide codes for some baseline models inside the project.
 
 
 ## Acknowledgement
