@@ -1,20 +1,17 @@
 # VH-NBEATS
 ### This is an offical implementation of VH-NBEATS and VH-PatchTST model. 
-
-
-
 ## Key Designs
 
-:star2: 
+:star2: Hierarchical timestamp basis Block is developed to capture global perspective pattern of time series.
 
-:star2: 
+:star2: Variational autoencoder structure is introduced to achieve a significant improvement over the standard deterministic approach
 
 ![alt text](https://github.com/runze1223/VH-NBEATS/blob/main/pic/VH-NBEATS.png)
 
 ## Results
 
 
-![alt text](https://github.com/yuqinie98/PatchTST/blob/main/pic/table3.png)
+![alt text](https://github.com/runze1223/VH-NBEATS/blob/main/pic/VH-NBEATS.png)
 
 
 ### Implement the project
@@ -44,9 +41,9 @@ https://github.com/MAZiqing/FEDformer
 
 https://github.com/alipay/Pyraformer
 
+https://github.com/yuqinie98/PatchTST
 
-## Contact
-
+https://github.com/cchallu/nbeatsx
 
 
 ## Citation
