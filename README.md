@@ -9,7 +9,7 @@
 
 :star2: 
 
-![alt text](https://github.com/yuqinie98/PatchTST/blob/main/pic/model.png)
+![alt text](https://github.com/runze1223/VH-NBEATS/edit/main/pic/VH-NBEATS.png)
 
 ## Results
 
