@@ -11,7 +11,7 @@
 ## Results
 
 
-![alt text](https://github.com/runze1223/VH-NBEATS/blob/main/pic/Experiment results.png)
+![alt text](https://github.com/runze1223/VH-NBEATS/blob/main/pic/Experiment_results.png)
 
 ## Visulization 
 
