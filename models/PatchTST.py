@@ -49,6 +49,7 @@ class Model(nn.Module):
         self.decomposition = decomposition
         if self.decomposition:
             self.decomp_module = series_decomp(kernel_size)
+
             self.model_trend = PatchTST_backbone(c_in=c_in, context_window = context_window, target_window=target_window, patch_len=patch_len, stride=stride, 
                                   max_seq_len=max_seq_len, n_layers=n_layers, d_model=d_model,
                                   n_heads=n_heads, d_k=d_k, d_v=d_v, d_ff=d_ff, norm=norm, attn_dropout=attn_dropout,
