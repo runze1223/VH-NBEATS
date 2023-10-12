@@ -527,7 +527,7 @@ class Model(nn.Module):
             kl_divergence_total.append(kl_divergence)
 
         if self.decomposition:
-            res_init, trend_init = self.decomp_module(x,y,z)
+            res_init, trend_init = self.decomp_module(x)
             res_init, trend_init = res_init.permute(0,2,1), trend_init.permute(0,2,1)  # x: [Batch, Channel, Input length]
             res = self.model_res(res_init)
             trend = self.model_trend(trend_init)
