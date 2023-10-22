@@ -55,6 +55,7 @@ https://github.com/cchallu/nbeatsx
 If you find this repo useful in your research, please consider citing our paper as follows:
 
 ```
+Please contact the author: 2689679964@qq.com or runze.y@sjtu.edu.cn
 
 ```
 
