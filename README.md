@@ -2,7 +2,7 @@
 ### This is an offical implementation of VH-NBEATS and VH-PatchTST model. 
 ## Key Designs
 
-:star2: Hierarchical timestamp basis Block is developed to capture global perspective pattern of time series.
+:star2: Hierarchical timestamp basis Block is developed to capture hierarchical effects by levearging hierarchical timestamp information.
 
 :star2: Variational autoencoder structure is introduced to achieve a significant improvement over the standard deterministic approach
 
