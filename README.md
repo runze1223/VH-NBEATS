@@ -10,12 +10,7 @@
 
 ## Results
 
-
 ![alt text](https://github.com/runze1223/VH-NBEATS/blob/main/pic/Experiment_results.png)
-
-## Visulization 
-
-![alt text](https://github.com/runze1223/VH-NBEATS/blob/main/pic/Visulization.png)
 
 
 ### Implement the project
