@@ -101,14 +101,13 @@ class Exp_Main(Exp_Basic):
                 else:
                     if 'Linear' in self.args.model or self.args.model=="PatchTST":
                         outputs = self.model(batch_x)
-
                     elif self.args.model=='VH-NBEATS':
                         if self.args.variation== True:
-                            outputs,backoutputs,kldivergence = self.model(batch_x,batch_x_mark, train_data)
+                            outputs,kldivergence = self.model(batch_x,batch_x_mark, train_data)
                         else:
                             outputs = self.model(batch_x,batch_x_mark,train_data)
                     elif self.args.model=='VH-PatchTST' :
-                        outputs,backoutputs,kldivergence = self.model(batch_x,batch_x_mark,train_data)
+                        outputs,kldivergence = self.model(batch_x,batch_x_mark,train_data)
                             
                     elif self.args.model=='Nbeats' or self.args.model=='VNL':
                         if self.args.variation== True:
@@ -216,7 +215,7 @@ class Exp_Main(Exp_Basic):
 
                         elif self.args.model=='VH-NBEATS' :
                             if self.args.variation== True:
-                                outputs,backoutputs,kldivergence = self.model(batch_x,batch_x_mark,basis_data)
+                                outputs,kldivergence = self.model(batch_x,batch_x_mark,basis_data)
                             else:
                                 outputs = self.model(batch_x,batch_x_mark,basis_data)  
                         elif self.args.model=='Nbeats' or self.args.model=='VNL':
@@ -225,7 +224,7 @@ class Exp_Main(Exp_Basic):
                             else:
                                 outputs = self.model(batch_x)
                         elif self.args.model=='VH-PatchTST' :
-                            outputs,backoutputs,kldivergence = self.model(batch_x,batch_x_mark,basis_data)
+                            outputs,kldivergence = self.model(batch_x,batch_x_mark,basis_data)
 
                         else:
                             if self.args.output_attention:
@@ -354,11 +353,11 @@ class Exp_Main(Exp_Basic):
 
                     elif self.args.model=='VH-NBEATS':
                             if self.args.variation== True:
-                                outputs,backoutputs,kldivergence = self.model(batch_x,batch_x_mark,basis_data)
+                                outputs,kldivergence = self.model(batch_x,batch_x_mark,basis_data)
                             else:
                                 outputs = self.model(batch_x,batch_x_mark,basis_data)  
                     elif self.args.model=='VH-PatchTST' :
-                        outputs,backoutputs,kldivergence = self.model(batch_x,batch_x_mark,basis_data)
+                        outputs,kldivergence = self.model(batch_x,batch_x_mark,basis_data)
 
                     else:
                         if self.args.output_attention:
