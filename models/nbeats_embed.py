@@ -104,7 +104,6 @@ class Year_basis(nn.Module):
 
     def generate_the_basis_function(self,index,input_len,output_len,basis, repeating_period): 
 
-
             repeat_foward= output_len//repeating_period+1
             repeat_backward= input_len//repeating_period+1
 
@@ -183,7 +182,7 @@ class Weekday_basis(nn.Module):
         self.backcast_size=backcast_size
         self.forecast_size=forecast_size
         self.dim=dim
-        self.temp=0.05
+        self.temp=0.5
         self.inference = Inference(backcast_size, backcast_size//2, 1,dim,individual)
         self.batch_size=batch_size
         self.softmax = nn.Softmax(dim=-1)
@@ -348,7 +347,7 @@ class Day_basis(nn.Module):
         self.backcast_size=backcast_size
         self.forecast_size=forecast_size
         self.dim=dim
-        self.temp=0.1
+        self.temp=0.05
         self.inference = Inference(backcast_size, backcast_size//2, 1,dim,individual)
         self.batch_size=batch_size
         self.softmax = nn.Softmax(dim=-1)
@@ -440,7 +439,7 @@ class TrendBasis(nn.Module):
         polynomial_size = degree_of_polynomial + 1
         self.backcast_size=backcast_size
         self.forecast_size=forecast_size           
-        total_grid=torch.tensor(np.concatenate([np.power(np.arange(forecast_size+backcast_size, dtype=np.float) / (forecast_size+backcast_size), i)[None, :]
+        total_grid=torch.tensor(np.concatenate([np.power(np.arange(forecast_size+backcast_size) / (forecast_size+backcast_size), i)[None, :]
                                     for i in range(polynomial_size)]), dtype=torch.float32)
         backcast_template=total_grid[:,:backcast_size]
         forecast_template=total_grid[:,backcast_size:]
@@ -453,17 +452,19 @@ class TrendBasis(nn.Module):
         forecast = torch.einsum('bkp,pt->bkt', theta, self.forecast_basis)
         return backcast, forecast
 
+
 class SeasonalityBasis(nn.Module):
     def __init__(self, harmonics, backcast_size, forecast_size,degree_of_polynomial,variation):
         super(SeasonalityBasis,self).__init__()
         self.backcast_size=backcast_size
         self.forecast_size=forecast_size
    
-        frequency = np.append(np.zeros(1, dtype=np.float32),
-                                        np.arange(harmonics, harmonics / 2 * (forecast_size+backcast_size),
-                                                    dtype=np.float32)/ harmonics)[None, :]
+        frequency = np.append(np.arange(harmonics, harmonics+harmonics / 2 * (forecast_size+backcast_size),dtype=np.float32)/ harmonics-1,0.5*(forecast_size+backcast_size)*np.ones(1, dtype=np.float32), )[None, :]
+
+        print(frequency)
+
         total_grid = -2 * np.pi * (
-                np.arange(backcast_size+forecast_size, dtype=np.float32)[:, None] / (forecast_size+backcast_size)) * frequency
+                np.arange(backcast_size+forecast_size, dtype=np.float32)[:, None] / (forecast_size+backcast_size)) * frequency 
 
         total_grid2 = -2 * np.pi * (
                 np.arange(backcast_size+forecast_size, dtype=np.float32)[:, None] / (forecast_size+backcast_size)) * frequency- -0.25 * np.pi* frequency
@@ -490,10 +491,45 @@ class SeasonalityBasis(nn.Module):
 
         self.backcast_basis = nn.Parameter(backcast_template, requires_grad=False)
         self.forecast_basis = nn.Parameter(forecast_template, requires_grad=False)
-    def forward(self, theta,x,y) :
+    def forward(self, theta,x,y):
+
         backcast = torch.einsum('bkp,pt->bkt', theta, self.backcast_basis)
         forecast = torch.einsum('bkp,pt->bkt', theta, self.forecast_basis)
+
         return backcast, forecast 
+
+
+
+
+class VectorQuantizer(nn.Module):
+    def __init__(self, num_embeddings, embedding_dim):
+        super(VectorQuantizer, self).__init__()
+        self.num_embeddings = num_embeddings  # 嵌入向量的数量
+        self.embedding_dim = embedding_dim    # 每个嵌入向量的维度
+        # 初始化嵌入表，形状为 (num_embeddings, embedding_dim)
+        self.embedding = nn.Embedding(self.num_embeddings, self.embedding_dim)
+        
+    def forward(self, x):
+        # 输入 x 的形状: (batch_size, embedding_dim, height, width)
+        # 例如, (batch_size, 64, 16, 16)
+        # 1. 展平空间维度
+
+        flat_x = x.view(-1, self.embedding_dim)  # 形状: (batch_size * height * width, embedding_dim)
+        
+        # 2. 计算欧氏距离，得到距离矩阵，形状为 (batch_size * height * width, num_embeddings)
+        distances = (torch.sum(flat_x**2, dim=1, keepdim=True) +
+                     torch.sum(self.embedding.weight**2, dim=1) -
+                     2 * torch.matmul(flat_x, self.embedding.weight.t()))
+        
+        # 3. 查找每个输入向量最近的嵌入向量索引，形状为 (batch_size * height * width,)
+        encoding_indices = torch.argmin(distances, dim=1)
+        
+        # 4. 获取量化后的嵌入向量并恢复原始形状，形状为 (batch_size, embedding_dim, height, width)
+        z_q = self.embedding(encoding_indices).view_as(x)
+        
+        
+        # 返回量化后的向量 z_q 以及编码索引 encoding_indices
+        return z_q, encoding_indices
 
        
 class NBeatsBlock(nn.Module):
@@ -530,6 +566,7 @@ class NBeatsBlock(nn.Module):
             # Batch norm after activation
             hidden_layers.append(nn.Linear(in_features=theta_n_hidden[i], out_features=theta_n_hidden[i+1]))
             # hidden_layers.append(self.activations[activation])
+            # hidden_layers.append(nn.Linear(in_features=theta_n_hidden[i+1], out_features=theta_n_hidden[i+1]))
             if i+1<n_layers:
                 if self.batch_normalization:
                     hidden_layers.append(nn.InstanceNorm1d(num_features=theta_n_hidden[i+1]))
@@ -542,8 +579,9 @@ class NBeatsBlock(nn.Module):
         hidden_layers = []
         for i in range(n_layers):
             # Batch norm after activation
-            hidden_layers.append(nn.Linear(in_features=theta_n_hidden[i], out_features=theta_n_hidden[i+1]))     
-            hidden_layers.append(self.activations[activation])
+            hidden_layers.append(nn.Linear(in_features=theta_n_hidden[i], out_features=theta_n_hidden[i+1]))
+            hidden_layers.append(self.activations[activation]) 
+            
             if i<n_layers:
                 if self.batch_normalization:
                     hidden_layers.append(nn.InstanceNorm1d(num_features=theta_n_hidden[i+1]))
@@ -554,6 +592,8 @@ class NBeatsBlock(nn.Module):
         self.layers2 = nn.Sequential(*layers)
         self.output_layer=nn.Linear(in_features=theta_n_hidden[-1], out_features=theta_n_dim)
         self.basis = basis
+
+        # self.vq=VectorQuantizer(256, theta_n_hidden[-1])
         
     def sample(self, mu, log_var):
         std = torch.exp(0.5*log_var)
@@ -572,16 +612,19 @@ class NBeatsBlock(nn.Module):
             if self.training:
                 mu = self.layers(insample_y)
                 log_var = self.layers2(insample_y)
-                ouput = self.sample(mu, log_var)
+                output = self.sample(mu, log_var)
                 kl_divergence=self.vae_loss(mu,log_var)
+                # output,_=self.vq(mu)
             else:
                 mu = self.layers(insample_y)
                 log_var = self.layers2(insample_y)
                 std = torch.exp(0.5*log_var)
-                ouput = mu
+                output = mu
                 log_var = None
                 kl_divergence=torch.tensor([0]).float().cuda()
-            theta=self.output_layer(ouput) 
+                # output,_=self.vq(mu)
+
+            theta=self.output_layer(output) 
         else:
             ouput=self.layers(insample_y)
             theta=self.output_layer(ouput)
@@ -642,7 +685,8 @@ class NBeats(nn.Module):
                 x_s_n_inputs = 0,
                 x_s_n_hidden= self.x_s_n_hidden,
                 theta_n_dim= 4 * int(
-                        np.ceil(self.n_harmonics / 2 * (self.output_size+self.input_size)) - (self.n_harmonics - 1)),
+                        np.ceil(self.n_harmonics / 2 * (self.output_size+self.input_size)) +1),
+                # theta_n_dim= 4 * 101,
                 basis=SeasonalityBasis(harmonics=self.n_harmonics,
                                         backcast_size=self.input_size,
                                         forecast_size=self.output_size,
@@ -650,7 +694,8 @@ class NBeats(nn.Module):
                                         variation=self.variation).cuda(),
                 n_layers=self.n_layers,
                 theta_n_hidden= [4 * int(
-                        np.ceil(self.n_harmonics / 2 * (self.output_size+self.input_size)) - (self.n_harmonics - 1))],
+                        np.ceil(self.n_harmonics / 2 * (self.output_size+self.input_size)) +1)],
+                        # np.ceil(self.n_harmonics / 2 * (self.output_size+self.input_size)) - (self.n_harmonics - 1))],
                 include_var_dict=self.include_var_dict,
                 t_cols=self.t_cols,
                 batch_normalization=self.batch_normalization,
@@ -666,7 +711,8 @@ class NBeats(nn.Module):
                 x_s_n_inputs = 0,
                 x_s_n_hidden= self.x_s_n_hidden,
                 theta_n_dim= 4 * int(
-                        np.ceil(self.n_harmonics / 2 * (self.output_size+self.input_size)) - (self.n_harmonics - 1)),
+                        np.ceil(self.n_harmonics / 2 * (self.output_size+self.input_size)) +1),
+                # theta_n_dim= 4 * 101,
                 basis=SeasonalityBasis(harmonics=self.n_harmonics,
                                         backcast_size=self.input_size,
                                         forecast_size=self.output_size,
@@ -674,7 +720,7 @@ class NBeats(nn.Module):
                                         variation=self.variation).cuda(),
                 n_layers=self.n_layers,
                 theta_n_hidden= [4 * int(
-                        np.ceil(self.n_harmonics / 2 * (self.output_size+self.input_size)) - (self.n_harmonics - 1))],
+                        np.ceil(self.n_harmonics / 2 * (self.output_size+self.input_size)) +1)],
                 include_var_dict=self.include_var_dict,
                 t_cols=self.t_cols,
                 batch_normalization=self.batch_normalization,
@@ -684,7 +730,8 @@ class NBeats(nn.Module):
                 channel=self.channel)
         
             block_list.append(self.nbeats_block3)
-            
+
+
         self.blocks= block_list
         self.basis_list=[]
         if 0 in self.embedding:
@@ -699,15 +746,17 @@ class NBeats(nn.Module):
         if 3 in self.embedding:
             self.vae4=Day_basis(self.input_size,self.output_size,self.channel,batch_size,embed,beta)
             self.basis_list.append(self.vae4)
+
+
     def forward(self, insample_y,x,y):
         insample_y= insample_y.permute(0,2,1)
         mean_i=torch.mean(insample_y,axis=2)
         insample_y=insample_y-mean_i.unsqueeze(2)
         kl_divergence_total=[]
         kl_divergence_total2=[]
-
         forecast_back=mean_i.unsqueeze(2)
         forecast=mean_i.unsqueeze(2)
+
         for i in range(len(self.basis_list)):
             basis_back,basis_foward,kl_divergence=self.basis_list[i](insample_y,x,y)
             insample_y = insample_y-basis_back
@@ -719,13 +768,16 @@ class NBeats(nn.Module):
         new_fore=torch.zeros_like(forecast)
         residuals = insample_y
         block_forecasts = []
+
+        residuals=residuals.detach()
+
         if self.variation==True:
             for i, block in enumerate(self.blocks):
                 backcast, block_forecast,kl_divergence,theta = block(residuals,x,y)
+
                 residuals = (residuals - backcast) 
-                forecast = forecast + block_forecast#*forecast_var2
-                new_back=new_back+backcast
-                new_fore=new_fore+block_forecast
+                forecast = forecast + block_forecast
+                forecast_back=forecast_back+backcast
                 kl_divergence_total.append(kl_divergence)
 
             kl_divergence_total=torch.stack(kl_divergence_total)
@@ -737,7 +789,6 @@ class NBeats(nn.Module):
 
                 backcast, block_forecast = block(residuals,x,y)            
                 forecast_back = forecast_back + backcast
-
                 residuals = (residuals - backcast) 
                 forecast = forecast + block_forecast
                 block_forecasts.append(block_forecast)
@@ -808,10 +859,11 @@ class Model(nn.Module):
                     forecast_total.append(forecast)
                     forecastback_total.append(forecastback)
                     kl_divergence_total.append(kl_divergence)
+                    
 
                 forecast_total=torch.stack(forecast_total,axis=2)
                 forecastback_total=torch.stack(forecastback_total,axis=2)
-                kl_divergence_total=torch.mean(t.stack(kl_divergence_total,axis=0))
+                kl_divergence_total=torch.mean(torch.stack(kl_divergence_total,axis=0))
             else:
                 forecast_total=[]
                 forecastback_total=[]
@@ -837,6 +889,8 @@ class Model(nn.Module):
         mean_a=torch.mean(forecastback,axis=1)
         difference=mean_i-mean_a
         difference=difference.unsqueeze(1)
+
+
         if self.variation==True:
             return forecast,forecastback, kl_divergence# [B, L, D],
         else: 
