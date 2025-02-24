@@ -41,6 +41,7 @@ parser.add_argument('--freq', type=str, default='h',
                     help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
 # forecasting task
+
 parser.add_argument('--seq_len', type=int, default=96, help='input sequence length')
 parser.add_argument('--label_len', type=int, default=0, help='start token length')
 parser.add_argument('--pred_len', type=int, default=96, help='prediction sequence length')
@@ -63,7 +64,7 @@ parser.add_argument('--distil', action='store_false',
                     default=True)     
 parser.add_argument('--dropout', type=float, default=0.4, help='dropout')
 parser.add_argument('--embed', type=str, default='else',
-                    help='time features encoding, options:[timeF, fixed, learned]')
+                    help='time features encoding, options:[timeF, ours]')
 parser.add_argument('--activation', type=str, default='gelu', help='activation')
 parser.add_argument('--output_attention', action='store_true', help='whether to output attention in ecoder')
 parser.add_argument('--do_predict',  type=int, default=0, help='whether to predict unseen future data')
@@ -71,7 +72,7 @@ parser.add_argument('--do_predict',  type=int, default=0, help='whether to predi
 
 #VH-NBEATS
 parser.add_argument('--n_polynomials', type=int, default=0,help='nbeats')
-parser.add_argument('--n_harmonics', type=int, default=1,help='nbeats')
+parser.add_argument('--n_harmonics', type=int, default=1,help='{1 : Fourier basis for L2 ,otherwise： Foureir basis for L1+L2}')
 parser.add_argument('--n_layers', type=int, default=1,help='nbeats')
 parser.add_argument('--variation', type=int, default=1,help='{1 : VAE， 0： Determisntic}')
 parser.add_argument('--theta_n_hidden', type=list, default=[[2,2],[2048,2048]],help='nbeats')
@@ -101,9 +102,9 @@ parser.add_argument('--alpha_1', type=float, default=0, help='control the KL div
 # optimization
 parser.add_argument('--num_workers', type=int, default=0, help='data loader num workers')
 parser.add_argument('--itr', type=int, default=1, help='experiments times')
-parser.add_argument('--train_epochs', type=int, default=40, help='train epochs')
+parser.add_argument('--train_epochs', type=int, default=100, help='train epochs')
 parser.add_argument('--batch_size', type=int, default=8, help='batch size of train input data')
-parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
+parser.add_argument('--patience', type=int, default=5, help='early stopping patience')
 parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
 parser.add_argument('--des', type=str, default='test', help='exp description')
 parser.add_argument('--loss', type=str, default='mse', help='loss function')
@@ -119,8 +120,13 @@ parser.add_argument('--devices', type=str, default='0,1,2,3', help='device ids o
 parser.add_argument('--test_flop', action='store_true', default=False, help='See utils/tools for usage')
 
 
-
 args = parser.parse_args()
+
+if args.n_harmonics==1:
+    args.n_harmonics=args.pred_len/(args.seq_len+args.pred_len)
+else: 
+    args.n_harmonics=1
+
 
 args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False
 
