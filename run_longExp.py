@@ -64,7 +64,7 @@ parser.add_argument('--distil', action='store_false',
                     default=True)     
 parser.add_argument('--dropout', type=float, default=0.4, help='dropout')
 parser.add_argument('--embed', type=str, default='else',
-                    help='time features encoding, options:[timeF, ours]')
+                    help='time features encoding, options:[timeF, (else)ours]')
 parser.add_argument('--activation', type=str, default='gelu', help='activation')
 parser.add_argument('--output_attention', action='store_true', help='whether to output attention in ecoder')
 parser.add_argument('--do_predict',  type=int, default=0, help='whether to predict unseen future data')
