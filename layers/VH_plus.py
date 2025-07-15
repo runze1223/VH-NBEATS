@@ -8,8 +8,8 @@ import numpy as np
 class BinaryConcrete(nn.Module):
     def __init__(self, temp,batch_size,ndim):
         super(BinaryConcrete, self).__init__()
-        self.gumbel = torch.distributions.Gumbel(
-            torch.zeros([batch_size,ndim,1]), torch.ones([batch_size,ndim,1]))
+        # self.gumbel = torch.distributions.Gumbel(
+        #     torch.zeros([batch_size,ndim,1]), torch.ones([batch_size,ndim,1]))
         self.temp = temp
         self.sigmoid = nn.Sigmoid()
 
@@ -153,7 +153,7 @@ class Year_basis(nn.Module):
         alpha = self.encode(input)[0]
         weight= self.weight.unsqueeze(0)
         weight=weight.unsqueeze(-1)
-        weight=weight.repeat(self.batch_size,1,1)
+        weight=weight.repeat(batch_size,1,1)
         alpha=(1-self.beta)*alpha+self.beta*weight
         sample = self.sample(alpha, self.temp)
         kl_diveregence=self.vae_loss(self.encode(input)[1])
@@ -239,7 +239,7 @@ class Weekday_basis(nn.Module):
         alpha = self.encode(input)[0]
         weight= self.weight.unsqueeze(0)
         weight=weight.unsqueeze(-1)
-        weight=weight.repeat(self.batch_size,1,1)
+        weight=weight.repeat(batch_size,1,1)
         alpha=(1-self.beta)*alpha+self.beta*weight
         sample = self.sample(alpha, self.temp)
         kl_diveregence=self.vae_loss(self.encode(input)[1])
@@ -325,7 +325,7 @@ class Week_basis(nn.Module):
         
         weight= self.weight.unsqueeze(0)
         weight=weight.unsqueeze(-1)
-        weight=weight.repeat(self.batch_size,1,1)
+        weight=weight.repeat(batch_size,1,1)
         alpha=(1-self.beta)*alpha+self.beta*weight
         sample = self.sample(alpha, self.temp)
         kl_diveregence=self.vae_loss(self.encode(input)[1])
@@ -409,7 +409,7 @@ class Day_basis(nn.Module):
 
         weight= self.weight.unsqueeze(0)
         weight=weight.unsqueeze(-1)
-        weight=weight.repeat(self.batch_size,1,1)
+        weight=weight.repeat(batch_size,1,1)
         alpha=(1-self.beta)*alpha+self.beta*weight
         sample = self.sample(alpha, self.temp)
         kl_diveregence=self.vae_loss(self.encode(input)[1])
