@@ -94,7 +94,7 @@ parser.add_argument('--decomposition', type=int, default=0, help='decomposition;
 parser.add_argument('--kernel_size', type=int, default=24, help='decomposition-kernel')
 parser.add_argument('--individual', type=int, default=0, help='individual head; True 1 False 0')
 parser.add_argument('--individual_embed', type=int, default=0, help='individual head; True 1 False 0')
-parser.add_argument('--embedding',nargs="+", default=[0,3],help='timestamp embedding:{ 0: Year effect 1: Week-day effect 2: Week effect 4: Day effect ',type=int)
+parser.add_argument('--embedding',nargs="+", default=[0,3],help='timestamp embedding:{ 0: Year effect 1: Week-day effect 2: Week effect 3: Day effect ',type=int)
 parser.add_argument('--beta', type=float, default=0, help='control the prior and posterior information')
 parser.add_argument('--alpha_0', type=float, default=0, help='control the KL divergence for hierarchicail timestamp block')
 parser.add_argument('--alpha_1', type=float, default=0, help='control the KL divergence for harmonic seasoanl block')
