@@ -1,8 +1,7 @@
 # VH-NBEATS
 ### This is an offical implementation of VH-NBEATS and VH-PatchTST model. 
 The paper "Variational Hierarchical N-BEATS Model for Long-Term Time-Series Forecasting" is accepted by TNNLS.
-You can read the full paper here: [Variational Hierarchical N-BEATS Model for Long-Term Time-Series Forecasting]([https://example.com/paper-link.pdf](https://ieeexplore.ieee.org/abstract/document/11038824))
-
+You can read the full paper here: [TNNLS](https://ieeexplore.ieee.org/abstract/document/11038824).
 ## Key Designs
 
 :star2: Hierarchical timestamp basis Block is developed to capture hierarchical effects by levearging hierarchical timestamp information.
